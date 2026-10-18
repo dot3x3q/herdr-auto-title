@@ -30,6 +30,7 @@ const (
 	EnvPreferAgent = "HERDR_AUTO_TITLE_PREFER_AGENT"
 	EnvPaneID      = "HERDR_AUTO_TITLE_PANE_ID"
 	EnvAgentHandle = "HERDR_AUTO_TITLE_AGENT_HANDLE"
+	EnvIcons       = "HERDR_AUTO_TITLE_ICONS"
 
 	EnvForeignProcesses = "HERDR_AUTO_TITLE_FOREIGN_PROCESSES"
 
@@ -89,6 +90,9 @@ type Config struct {
 	// its label. Unlike ShowAgentName it is the user's word for the agent's
 	// role, not the agent's kind. Inert without RenamePanes.
 	ShowAgentHandle bool
+	// ShowIcons puts a Nerd Font icon for what a pane runs in front of its tab
+	// and pane labels. Off by default: without such a font each icon is a box.
+	ShowIcons bool
 	// ReportWorkspaces reports what each workspace's active tab is doing as its
 	// `topic` token. Herdr draws it only where the user's sidebar rows ask for
 	// `$topic`, and the label is never touched.
@@ -154,6 +158,7 @@ func LoadConfig() (Config, []string) {
 	cfg.PreferAgentPane = fromEnv(&warnings, EnvPreferAgent, cfg.PreferAgentPane, boolean)
 	cfg.ShowPaneID = fromEnv(&warnings, EnvPaneID, cfg.ShowPaneID, boolean)
 	cfg.ShowAgentHandle = fromEnv(&warnings, EnvAgentHandle, cfg.ShowAgentHandle, boolean)
+	cfg.ShowIcons = fromEnv(&warnings, EnvIcons, cfg.ShowIcons, boolean)
 	cfg.ReportWorkspaces = fromEnv(&warnings, EnvWorkspaces, cfg.ReportWorkspaces, boolean)
 	cfg.WorkspaceMaxLength = fromEnv(
 		&warnings,

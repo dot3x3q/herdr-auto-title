@@ -762,3 +762,32 @@ leads, it is counted against `MaxLength`, and where nothing would be left of the
 name the ID goes and the name stays. The brackets rather than `·` keep it from
 reading as a tab position when the goto panel lists both. It is off by default:
 the ID is noise to anyone not addressing panes by hand.
+
+## The icon is not a part of the title either
+
+`HERDR_AUTO_TITLE_ICONS=true` puts a Nerd Font icon for what a pane runs in
+front of its tab and pane labels: a robot for an agent, a server for an ssh
+or mosh session, a program's own mark for the common ones (`nvim`, `git`,
+`docker`, `psql`, `htop`, `cargo`...), a gear for any other program and a prompt
+for a bare shell. The table is `programIcons` in `internal/resolver/icons.go`.
+
+It is a pair of decorators, `IconedTitles` and `IconedPanes`, for the reasons
+the position and the pane ID are: the icon says nothing a source could supply,
+and the label it returns is the one the manual-rename bookkeeping compares
+against. It sits inside both — `1 · <icon> billing`, `[w1:p2] <icon> api` —
+because those two are keys a user types, and keys lead.
+
+The icon is read off the foreground process alone, the one
+`herdr.PaneProcesses` lists last. A descendant is not what the pane is for:
+Neovim runs its language servers under `node` and `git push` runs `ssh`, and
+either would otherwise take the icon. It is not `paneKind` either, which
+declines a runtime such as `node` and a remote session: neither says what the
+work is, so neither names a title, but each is still a kind of program.
+
+It is off by default. The glyphs are in the Private Use Area, a terminal
+without a Nerd Font draws each as a box, and the plugin runs in the server,
+where nothing says what font the client that draws the tab bar uses.
+
+The glyphs need Nerd Fonts 3.0 or later: the agent's robot is an Octicon that
+2.3 lacks. On Windows only two icons ever show, the agent's and the shell's,
+because `pane.process_info` there lists nothing that runs under the shell.

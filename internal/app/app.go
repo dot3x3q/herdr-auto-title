@@ -97,9 +97,9 @@ func New(
 }
 
 // Resolvers builds what the configuration asks titles to be resolved by: the
-// shipped chain, its position in front when asked, panes named unless that is
-// turned off and their IDs in front when asked, and topics reported unless that
-// is turned off.
+// shipped chain, icons and then its position in front when asked, panes named
+// unless that is turned off with icons and then their IDs in front when asked,
+// and topics reported unless that is turned off.
 func Resolvers(
 	cfg Config,
 ) (resolver.TitleResolver, resolver.PaneResolver, *resolver.Topics) {
@@ -112,8 +112,12 @@ func Resolvers(
 	})
 
 	var titles resolver.TitleResolver = chain
+	if cfg.ShowIcons {
+		titles = resolver.NewIconedTitles(titles, cfg.MaxLength)
+	}
+
 	if cfg.ShowPosition {
-		titles = resolver.NewNumbered(chain, cfg.MaxLength)
+		titles = resolver.NewNumbered(titles, cfg.MaxLength)
 	}
 
 	topics := topicsFor(cfg)
@@ -123,8 +127,12 @@ func Resolvers(
 	}
 
 	var panes resolver.PaneResolver = chain
+	if cfg.ShowIcons {
+		panes = resolver.NewIconedPanes(panes, cfg.MaxLength)
+	}
+
 	if cfg.ShowPaneID {
-		panes = resolver.NewPaneIDs(chain, cfg.MaxLength)
+		panes = resolver.NewPaneIDs(panes, cfg.MaxLength)
 	}
 
 	return titles, panes, topics
