@@ -179,8 +179,9 @@ fits the topic to it, while any width set here is a guess.
 
 The file is read once. Half the settings are consumed in `main.run` while it
 builds the resolver chains — `MAX_LENGTH` and `BRANCH_MAX` are baked into
-`resolver.Default`, `WORKSPACE_MAX_LENGTH` into the topic's bound, `POSITION`
-decides whether the tab chain is wrapped at all — so
+`resolver.Default`, `WORKSPACE_MAX_LENGTH` into the topic's bound, `ICONS` decides
+whether both chains are wrapped, and `POSITION` and `PANE_ID` whether the tab
+and the pane chain are — so
 rereading the file mid-run would apply some settings and quietly ignore others.
 An honest restart is better than a reload that works half the time, and the
 plugin restarts in about a second without the server: the `restart` action,
