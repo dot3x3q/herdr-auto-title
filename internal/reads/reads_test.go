@@ -772,7 +772,7 @@ func antigravityPaneAt(paneID, sessionID, dir string) *state.PaneState {
 		AgentSession: &herdr.AgentSessionInfo{
 			Agent: "agy", Kind: herdr.SessionRefID, Value: sessionID,
 		},
-	}, time.Time{})
+	}, "", time.Time{})
 }
 
 // annotation lays down the test session's Antigravity annotation in a home of
@@ -781,7 +781,7 @@ func annotation(t *testing.T, content string) string {
 	t.Helper()
 
 	home := t.TempDir()
-	path := filepath.Join(home, "annotations", testSession+".pbtxt")
+	path := filepath.Join(home, ".gemini", "antigravity-cli", "annotations", testSession+".pbtxt")
 
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)
@@ -800,7 +800,7 @@ func TestAnAntigravitySessionIsNamedByItsAnnotation(t *testing.T) {
 	// The agent sets no terminal title, so the annotation is the only place
 	// its pane says what it is about.
 	opts := transcriptOptions()
-	opts.AntigravityDir = annotation(t, `title:"Casual Greeting And Request"`)
+	opts.Home = annotation(t, `title:"Casual Greeting And Request"`)
 
 	pane := antigravityPaneAt("wE:p1", testSession, t.TempDir())
 	readOne(opts, pane)
@@ -814,7 +814,7 @@ func TestTranscriptsSwitchedOffLeaveAnAntigravitySessionUnread(t *testing.T) {
 	t.Parallel()
 
 	opts := branchOptions()
-	opts.AntigravityDir = annotation(t, `title:"Casual Greeting And Request"`)
+	opts.Home = annotation(t, `title:"Casual Greeting And Request"`)
 
 	pane := antigravityPaneAt("wE:p1", testSession, t.TempDir())
 	readOne(opts, pane)

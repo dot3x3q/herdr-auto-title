@@ -393,21 +393,6 @@ func TestASessionFiledUnderAnotherDirectoryIsStillFound(t *testing.T) {
 	}
 }
 
-func TestAnIdThatIsNotASessionIsRefused(t *testing.T) {
-	t.Parallel()
-
-	// The id arrives over the socket and becomes part of a path.
-	p := newProject(t)
-
-	reader := p.reader()
-
-	for _, id := range []string{"", "../../../etc/passwd", "8852bfe0", strings.Repeat("a", 36)} {
-		if got := reader.Topic(id, started); got.Text() != "" {
-			t.Errorf("id %q resolved to %+v", id, got)
-		}
-	}
-}
-
 func TestASessionWithNoTranscriptSaysNothing(t *testing.T) {
 	t.Parallel()
 

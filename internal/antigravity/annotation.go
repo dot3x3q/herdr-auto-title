@@ -17,27 +17,30 @@ const Agent = "agy"
 // text format holding one quoted string.
 var titlePattern = regexp.MustCompile(`(?m)^\s*title\s*:\s*("(?:[^"\\\n]|\\.)*")`)
 
-// sessionIDPattern is the shape of a session id. The id arrives over the socket
-// and becomes part of a path, so anything else is refused rather than cleaned.
-var sessionIDPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$`)
-
 type Reader struct {
 	root string
 }
 
-// NewReader builds a reader over root, the Antigravity CLI state directory.
-func NewReader(root string) *Reader {
-	return &Reader{root: root}
+// NewReader builds a reader over the user's home directory, where Antigravity
+// CLI keeps its state without letting the user move it. An empty home reads
+// nothing.
+func NewReader(home string) *Reader {
+	if home == "" {
+		return &Reader{}
+	}
+
+	return &Reader{root: filepath.Join(home, ".gemini", "antigravity-cli")}
 }
 
 // Title reports what the agent named the session, or "" when nothing can be
-// read.
+// read. The id becomes part of a path, so it must be one
+// herdr.AgentSessionInfo.ID accepted.
 func (r *Reader) Title(sessionID string) string {
-	if r.root == "" || !sessionIDPattern.MatchString(sessionID) {
+	if r.root == "" {
 		return ""
 	}
 
-	//nolint:gosec // the root is configured and the id is checked before use
+	//nolint:gosec // the root is the user's home and herdr refuses an id that is not a UUID
 	content, err := os.ReadFile(filepath.Join(r.root, "annotations", sessionID+".pbtxt"))
 	if err != nil {
 		return ""

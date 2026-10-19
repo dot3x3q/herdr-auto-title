@@ -97,11 +97,11 @@ func NewReader(homes ...string) *Reader {
 	}
 }
 
-// Topic reports what the session is about, and the zero topic when nothing can
-// be read: no transcript, an unreadable one, or one that has said nothing yet.
-// dir is the pane's directory, where the transcript is looked for first.
+// Topic reports what the session is about, or the zero topic when nothing can
+// be read. dir is where the transcript is looked for first; the id becomes part
+// of a path, so it must be one herdr.AgentSessionInfo.ID accepted.
 func (r *Reader) Topic(sessionID, dir string) Topic {
-	if len(r.roots) == 0 || !isSessionID(sessionID) {
+	if len(r.roots) == 0 {
 		return Topic{}
 	}
 
@@ -160,14 +160,6 @@ func (r *Reader) find(session *transcript, sessionID, dir string) bool {
 	session.path = path
 
 	return true
-}
-
-// sessionIDPattern is the shape of a session id. The id arrives over the socket
-// and becomes part of a path, so anything else is refused rather than cleaned.
-var sessionIDPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$`)
-
-func isSessionID(value string) bool {
-	return sessionIDPattern.MatchString(value)
 }
 
 // locate finds the transcript in the first configuration directory that holds

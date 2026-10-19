@@ -1,5 +1,7 @@
 package herdr
 
+import "regexp"
+
 // Agent statuses a tab is named differently for. Herdr reports three more —
 // idle, done and unknown — and none of them changes what a tab says, so
 // nothing here names them.
@@ -72,11 +74,15 @@ type AgentSessionInfo struct {
 	Value string `json:"value"`
 }
 
-// IDFor reports the session id this reference holds, and false unless it names
-// a session of the given agent by id. A nil reference is a pane whose agent has
-// reported nothing, which is every pane until an integration is installed.
-func (s *AgentSessionInfo) IDFor(agent string) (string, bool) {
-	if s == nil || s.Agent != agent || s.Kind != SessionRefID {
+// sessionIDPattern is the shape of a session id. A reader makes the id part of
+// a path, so anything else is refused rather than cleaned.
+var sessionIDPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$`)
+
+// ID reports the session id this reference holds, and false unless it names a
+// session by an id shaped like a UUID. A nil reference is a pane whose agent
+// has reported nothing, which is every pane until an integration is installed.
+func (s *AgentSessionInfo) ID() (string, bool) {
+	if s == nil || s.Kind != SessionRefID || !sessionIDPattern.MatchString(s.Value) {
 		return "", false
 	}
 

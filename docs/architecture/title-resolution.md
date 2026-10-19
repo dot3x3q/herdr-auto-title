@@ -184,8 +184,9 @@ Three costs are worth stating plainly:
   transcript that no longer carries them yields nothing and the source
   declines — the failure mode is the tab named as it was before this existed,
   not a wrong name.
-- **The session id becomes part of a path.** It arrives over the socket, so it
-  is refused unless it is shaped like a UUID rather than cleaned.
+- **The session id becomes part of a path.** It arrives over the socket, so
+  `herdr.AgentSessionInfo.ID` refuses it unless it is shaped like a UUID rather
+  than cleaning it, for every agent whose files are found by id.
 
 #### Antigravity CLI annotations
 
@@ -197,18 +198,17 @@ session id the same way the Claude hook does, as `agent_session` with
 holding one field, `title:"Casual Greeting And Request"`.
 
 `internal/antigravity` reads that field and nothing else. The agent's state
-directory is not configurable, so `Config.AntigravityDir` is derived from the
-home directory rather than read from a variable. The same switch turns it off,
-`HERDR_AUTO_TITLE_TRANSCRIPT=false`, and the session id is refused unless it is
-shaped like a UUID, for the reason above.
+directory is not configurable, so the reader builds it from the home directory
+rather than taking it from a variable. The same switch turns it off,
+`HERDR_AUTO_TITLE_TRANSCRIPT=false`, and the session id is refused the same way.
 
 Two differences from the transcript are worth knowing:
 
 - **The title is written once**, when the session opens, and is not revised as
   the conversation moves on. A tab names what the session started as.
-- **It says nothing of where the agent works**, so `Topic.Dir` stays empty and
-  the branch is the pane's own. The file is a few dozen bytes and is read whole
-  on every poll; nothing is remembered between polls.
+- **It says nothing of where the agent works**, so the topic carries no
+  directory and the branch is the pane's own. The file is a few dozen bytes and
+  is read whole on every poll; nothing is remembered between polls.
 
 ### Foreground process
 

@@ -64,9 +64,9 @@ type Config struct {
 	// ManualPath is where tabs the user renamed by hand are remembered across
 	// restarts. Empty keeps them in memory only.
 	ManualPath string
-	// ReadTranscripts lets a title come from an agent's own session transcript
-	// when the agent has not titled its terminal. It reads what the user has
-	// been saying to that agent, so it can be turned off.
+	// ReadTranscripts lets a title come from an agent's own session files when
+	// the agent has not titled its terminal. They hold what the user has been
+	// saying to that agent, so the read can be turned off.
 	ReadTranscripts bool
 	// ShowAgentName puts the name of the agent running in a pane in front of
 	// what it is working on. Turned off, a pane whose agent has said nothing
@@ -99,9 +99,6 @@ type Config struct {
 	// adds. A home the user's shell picks per directory cannot be discovered,
 	// so it is named.
 	ClaudeDirs []string
-	// AntigravityDir is the Antigravity CLI state directory session titles are
-	// read from, or "" when there is no home directory to find it under.
-	AntigravityDir string
 	// Home is the user's home directory, or "" when there is none.
 	Home string
 }
@@ -134,7 +131,6 @@ func LoadConfig() (Config, []string) {
 		RenamePanes:      true,
 		ReportWorkspaces: true,
 		ClaudeDirs:       homes,
-		AntigravityDir:   antigravityHome(),
 		Home:             userHome(),
 		// ShowAgentName stays false: most sessions run one agent, whose name
 		// would repeat on every tab.
@@ -232,17 +228,6 @@ func claudeHome() string {
 	}
 
 	return filepath.Join(home, ".claude")
-}
-
-// antigravityHome is where Antigravity CLI keeps its state, which it does not
-// let the user move.
-func antigravityHome() string {
-	home := userHome()
-	if home == "" {
-		return ""
-	}
-
-	return filepath.Join(home, ".gemini", "antigravity-cli")
 }
 
 func userHome() string {

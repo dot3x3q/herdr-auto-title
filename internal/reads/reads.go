@@ -19,8 +19,8 @@ import (
 type Options struct {
 	// ClaudeDirs are the Claude Code configuration homes transcripts are found in.
 	ClaudeDirs []string
-	// AntigravityDir is the Antigravity CLI state directory annotations are read from.
-	AntigravityDir string
+	// Home is the user's home directory, where Antigravity CLI keeps its state.
+	Home string
 	// BranchMax of zero or less turns branches off, and then no checkout is read.
 	BranchMax       int
 	ReadTranscripts bool
@@ -41,7 +41,7 @@ func New(opts Options, log *slog.Logger) *Reader {
 	return &Reader{
 		processes:       newProcessCache(),
 		topics:          claude.NewReader(opts.ClaudeDirs...),
-		annotations:     antigravity.NewReader(opts.AntigravityDir),
+		annotations:     antigravity.NewReader(opts.Home),
 		log:             log,
 		readBranches:    opts.BranchMax > 0,
 		readTranscripts: opts.ReadTranscripts,
@@ -98,10 +98,10 @@ func (p *Poll) Fill(ctx context.Context, pane *state.PaneState) {
 	// The transcript is read before the checkout because it says where the
 	// agent is working, and that is where the branch is read from.
 	topic := p.reader.topic(ctx, pane, dir)
-	pane.AgentTopic = topic.Text()
+	pane.AgentTopic = topic.text
 	pane.Git = p.checkout(ctx, dir)
-	pane.AgentGit = p.checkout(ctx, topic.Dir)
-	pane.AgentDir = topic.Dir
+	pane.AgentGit = p.checkout(ctx, topic.dir)
+	pane.AgentDir = topic.dir
 }
 
 // processesOf reports what a pane is running, or false when Herdr gave no
@@ -159,27 +159,46 @@ func (p *Poll) checkout(ctx context.Context, dir string) git.Checkout {
 	return checkout
 }
 
-// topic reports what the session the pane's agent is holding says it is about,
-// and where that agent is working. Claude Code's transcripts and Antigravity
-// CLI's annotations are understood, and only Herdr's integration hook says
-// which session a pane holds.
-func (r *Reader) topic(ctx context.Context, pane *state.PaneState, dir string) claude.Topic {
+// sessionTopic is what an agent's own session says it is about, and where the
+// agent works when the session says so.
+type sessionTopic struct {
+	text string
+	dir  string
+}
+
+// topic reports what the session the pane's agent is holding says it is about.
+// Only Herdr's integration hook says which session a pane holds.
+func (r *Reader) topic(ctx context.Context, pane *state.PaneState, dir string) sessionTopic {
 	if !r.readTranscripts || spent(ctx) {
-		return claude.Topic{}
+		return sessionTopic{}
 	}
 
-	// An annotation names the session and nothing else: it says nothing of where
-	// the agent is working, so the pane's own directory keeps the branch.
-	if sessionID, ok := pane.AgentSession.IDFor(antigravity.Agent); ok {
-		return claude.Topic{Title: r.annotations.Title(sessionID)}
+	if pane.AgentSession == nil {
+		return sessionTopic{}
 	}
 
-	sessionID, ok := pane.AgentSession.IDFor(claude.Agent)
-	if !ok {
-		return claude.Topic{}
+	switch pane.AgentSession.Agent {
+	case claude.Agent:
+		sessionID, ok := pane.AgentSession.ID()
+		if !ok {
+			return sessionTopic{}
+		}
+
+		topic := r.topics.Topic(sessionID, dir)
+
+		return sessionTopic{text: topic.Text(), dir: topic.Dir}
+	case antigravity.Agent:
+		sessionID, ok := pane.AgentSession.ID()
+		if !ok {
+			return sessionTopic{}
+		}
+
+		// An annotation says nothing of where the agent works, so the pane's own
+		// directory keeps the branch.
+		return sessionTopic{text: r.annotations.Title(sessionID)}
 	}
 
-	return r.topics.Topic(sessionID, dir)
+	return sessionTopic{}
 }
 
 // spent reports that the poll is past its deadline. The reads it guards go to

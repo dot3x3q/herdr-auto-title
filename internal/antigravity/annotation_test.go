@@ -8,8 +8,8 @@ import (
 
 const session = "a98ff10a-2d0a-4e86-9ee9-ca70a807619d"
 
-// home is an Antigravity CLI state directory built out of files, so the tests
-// describe the annotation format they parse rather than depend on the agent.
+// home is a home directory holding Antigravity CLI state built out of files,
+// so the tests describe the annotation format rather than depend on the agent.
 type home struct {
 	t    *testing.T
 	root string
@@ -25,7 +25,7 @@ func newHome(t *testing.T) home {
 func (h home) annotate(content string) {
 	h.t.Helper()
 
-	path := filepath.Join(h.root, "annotations", session+".pbtxt")
+	path := filepath.Join(h.root, ".gemini", "antigravity-cli", "annotations", session+".pbtxt")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		h.t.Fatal(err)
 	}
@@ -43,20 +43,6 @@ func TestAnAnnotationNamesASession(t *testing.T) {
 
 	if got := NewReader(h.root).Title(session); got != "Casual Greeting And Request" {
 		t.Errorf("title = %q, want the annotated title", got)
-	}
-}
-
-func TestASessionIDThatIsNotOneReadsNothing(t *testing.T) {
-	t.Parallel()
-
-	// The id arrives over the socket and becomes part of a path, so one that
-	// walks out of the annotations directory must not reach the file it names.
-	h := newHome(t)
-	h.annotate(`title:"Leaked"`)
-
-	escape := filepath.Join("..", "annotations", session)
-	if got := NewReader(h.root).Title(escape); got != "" {
-		t.Errorf("title = %q, want nothing for an id that is a path", got)
 	}
 }
 
