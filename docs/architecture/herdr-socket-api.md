@@ -340,8 +340,15 @@ reads, so this section describes Herdr rather than those types.
   [title resolution](./title-resolution.md).
 - **An Antigravity CLI pane reports `agent: "agy"`** and, with its integration
   installed, an `agent_session` of `agent: "agy"`, `kind: "id"` and
-  `source: "herdr:antigravity_cli"`. It sets no terminal title, so
-  `terminal_title` is absent from its pane object. Measured on Herdr 0.9.0.
+  `source: "herdr:antigravity_cli"`. Without the integration the pane still
+  reports `agent: "agy"` but no `agent_session` at all. It sets no terminal
+  title, so `terminal_title` is absent from its pane object. Measured on Herdr
+  0.9.0.
+- **An Antigravity CLI pane's session moves on the first prompt, not on
+  `/resume`.** The integration's hook runs only on `PreInvocation`, so after a
+  resume `agent_session` keeps naming the session left behind until a prompt is
+  sent, and the tab keeps that session's title until then. Measured on Herdr
+  0.9.5 with integration version 4.
 - **`pane.report_metadata` is how anything outside Herdr sets `PaneInfo.title`.**
   Probed directly: `herdr pane report-metadata <pane> --source X --title T` put
   `T` in the snapshot's `title` and a tab bearing it appeared within one poll;

@@ -58,12 +58,14 @@ that tab. In Herdr's `config.toml`:
 prompt_new_tab_name = false
 ```
 
-**Install Herdr's Claude Code integration**, if you use Claude Code. Without
-it, a session you opened with a slash command and never prompted stays
-`claude`.
+**Install Herdr's integration for each agent you use.** It tells Auto Title
+which session a pane holds, so the tab is named after that session. Without it,
+a tab says only what the agent puts in its terminal title, and for Antigravity
+CLI that is nothing but `agy`.
 
 ```sh
-herdr integration install claude
+herdr integration install claude           # Claude Code
+herdr integration install antigravity-cli  # Antigravity CLI
 ```
 
 **Show the topic in the sidebar.** Auto Title reports what each workspace's
