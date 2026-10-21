@@ -254,6 +254,13 @@ guesswork when the pane's terminal title already says what it is doing. A shell
 as the foreground process means there is no activity, not that the shell is the
 name.
 
+An interpreter is not a kind either. A Python program runs as `python3.13`
+under uv and as `Python` under a macOS framework build, and either way the name
+says the language, not the program, which the terminal title already names.
+`runtimeName` refuses it here, in `paneKind`, and not in `isGeneric`: a terminal
+title that is only the interpreter, which fish sets for a bare REPL, is still
+the activity, so `python3.15` keeps its version.
+
 What this source produces is a **kind** — the program, not the work.
 `qualify` binds a kind to whatever a higher source found, and `stripKind` drops
 a kind a detail already carries, so `nvim › auth.provider.ts - Nvim` does not say

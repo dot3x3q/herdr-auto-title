@@ -1,6 +1,7 @@
 package resolver
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/kryptamine/herdr-auto-title/internal/state"
@@ -13,6 +14,11 @@ var shellNames = map[string]struct{}{
 	"bash": {}, "zsh": {}, "fish": {}, "sh": {}, "dash": {}, "ksh": {},
 	"tcsh": {}, "csh": {}, "login": {}, "pwsh": {}, "powershell": {}, "cmd": {},
 }
+
+// runtimeName matches an interpreter, whose name says the language and never
+// the program it runs, under every name a build gives it: `python3.13`, the
+// free-threaded `python3.13t`, and the `Python` a macOS framework build runs as.
+var runtimeName = regexp.MustCompile(`^(node|python)[0-9.]*t?$`)
 
 // paneKind names what a pane is running, or "" when that cannot be said. The
 // agent comes first because a process list never names one, and only a lone
@@ -55,7 +61,7 @@ func paneKind(pane *state.PaneState) string {
 		return ""
 	}
 
-	if isGeneric(strings.ToLower(kind)) {
+	if lowered := strings.ToLower(kind); runtimeName.MatchString(lowered) || isGeneric(lowered) {
 		// A runtime names the language, not the work.
 		return ""
 	}

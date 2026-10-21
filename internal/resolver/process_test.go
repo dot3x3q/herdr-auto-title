@@ -87,12 +87,35 @@ func TestOnlyALoneProcessNamesAPane(t *testing.T) {
 		{[]string{"caffeinate", "node", "node", "fff-mcp", "2.1.241"}, ""},
 		// A bare runtime names the language, not the work.
 		{[]string{"node"}, ""},
+		// Python under the names uv, Homebrew and a free-threaded build run it as.
+		{[]string{"Python"}, ""},
+		{[]string{"python3"}, ""},
+		{[]string{"python3.13"}, ""},
+		{[]string{"python3.13t"}, ""},
+		{[]string{"pythonista"}, "pythonista"},
 		{nil, ""},
 	}
 	for _, c := range cases {
 		if got := paneKind(&state.PaneState{Processes: running(c.names...)}); got != c.want {
 			t.Errorf("paneKind(%v) = %q, want %q", c.names, got, c.want)
 		}
+	}
+}
+
+func TestAnInterpreterTitleSurvivesAsTheActivity(t *testing.T) {
+	t.Parallel()
+
+	// A bare REPL: fish titles the window after the interpreter, which is the
+	// one thing that says what the pane is doing.
+	pane := &state.PaneState{
+		Dir:           dashboard,
+		TerminalTitle: "python3.15",
+		Processes:     running("Python"),
+	}
+
+	got := defaultChain().Resolve(tabWithPane(pane))
+	if want := "dashboard › python3.15"; got.Name != want {
+		t.Errorf("name = %q, want %q", got.Name, want)
 	}
 }
 
